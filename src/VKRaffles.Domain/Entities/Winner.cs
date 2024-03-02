@@ -4,15 +4,15 @@ namespace VKRaffles.Domain.Entities;
 
 public record Winner
 {
-    public Winner(Guid participantId, Guid prizeId)
+    public Winner(long participantVkId, Guid prizeId)
     {
-        Guard.Against.Default(participantId);
+        Guard.Against.Default(participantVkId);
         Guard.Against.Default(prizeId);
 
-        ParticipantId = participantId;
+        ParticipantVkId = participantVkId;
         PrizeId = prizeId;
     }
-    
-    public Guid ParticipantId { get; }
+
+    public long ParticipantVkId { get; }
     public Guid PrizeId { get; }
 }

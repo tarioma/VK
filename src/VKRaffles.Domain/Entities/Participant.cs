@@ -14,7 +14,7 @@ public record Participant
         VkId = vkId;
         RaffleId = raffleId;
     }
-    
+
     public Guid Id { get; }
     public long VkId { get; }
     public Guid RaffleId { get; }

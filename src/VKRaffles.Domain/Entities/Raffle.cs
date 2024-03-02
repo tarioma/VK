@@ -5,12 +5,11 @@ namespace VKRaffles.Domain.Entities;
 
 public record Raffle
 {
-    public const int MaxPrizesCount = 10;
-    public const int MaxSecondGroupSlugLength = 33;
+    internal const int MaxPrizesCount = 10;
+    internal const int MaxParticipantsCount = 1_000_000;
+    internal const int MaxSecondGroupSlugLength = 33;
 
     private const string PostIdPattern = @"^-\d{1,10}_\d{1,10}$";
-
-    private readonly HashSet<Winner> _winners;
 
     public Raffle(
         Guid id,
@@ -18,41 +17,50 @@ public record Raffle
         Criteria criteria,
         DateTime dateTime,
         Guid organizerId,
-        IEnumerable<Participant> participants,
-        IEnumerable<Prize> prizes,
+        IReadOnlySet<long> participants,
+        IReadOnlySet<Prize> prizes,
         string? secondGroupSlug)
     {
         Guard.Against.Default(id);
-        Guard.Against.Null(postId);
         Guard.Against.InvalidFormat(postId, nameof(postId), PostIdPattern);
+        Guard.Against.Default(criteria);
+        Guard.Against.Default(dateTime);
         Guard.Against.Default(organizerId);
+        Guard.Against.NullOrEmpty(participants);
+        Guard.Against.OutOfRange(prizes.Count, nameof(prizes), 1, MaxParticipantsCount);
+        Guard.Against.NullOrEmpty(prizes);
+        Guard.Against.OutOfRange(prizes.Count, nameof(prizes), 1, MaxPrizesCount);
+
+        if (secondGroupSlug is null && (criteria & Criteria.SecondGroupSubscription) == 0)
+        {
+            throw new ArgumentException("Короткое имя второго сообщества передано, но критерий не выбран.");
+        }
 
         if (secondGroupSlug is not null)
         {
+            secondGroupSlug = secondGroupSlug.Trim();
             Guard.Against.StringTooLong(secondGroupSlug, MaxSecondGroupSlugLength);
         }
 
-        Guard.Against.Default(criteria);
-        ValidateCriteria(criteria);
+        if ((criteria & Criteria.Subscription) == 0 && (criteria & Criteria.SecondGroupSubscription) != 0)
+        {
+            throw new ArgumentException("Второе сообщество не может быть выбрано без основного.", nameof(criteria));
+        }
 
-        var participantsArray = participants as Participant[] ?? participants.ToArray();
-        Guard.Against.NullOrEmpty(participantsArray);
-
-        var prizesArray = prizes as Prize[] ?? prizes.ToHashSet().ToArray();
-        Guard.Against.NullOrEmpty(prizesArray);
-        Guard.Against.OutOfRange(prizesArray.Length, nameof(prizes), 1, MaxPrizesCount);
-
-        ValidatePrizesCountWithParticipantsCount(participantsArray, prizesArray);
+        if (prizes.Sum(p => p.Count) > participants.Count)
+        {
+            throw new AggregateException("Количество призов не может быть больше количества участников.");
+        }
 
         Id = id;
         PostId = postId;
         Criteria = criteria;
         DateTime = dateTime;
-        SecondGroupSlug = secondGroupSlug?.Trim();
+        SecondGroupSlug = secondGroupSlug;
         OrganizerId = organizerId;
-        Participants = participantsArray.ToHashSet();
-        Prizes = prizesArray.ToHashSet();
-        _winners = new HashSet<Winner>();
+        Participants = participants;
+        Prizes = prizes;
+        Winners = new HashSet<Winner>();
     }
 
     public Guid Id { get; }
@@ -61,54 +69,46 @@ public record Raffle
     public DateTime DateTime { get; }
     public string? SecondGroupSlug { get; }
     public Guid OrganizerId { get; }
-    public IReadOnlyCollection<Participant> Participants { get; }
-    public IReadOnlyCollection<Prize> Prizes { get; }
-    public IReadOnlyCollection<Winner> Winners => _winners;
+    public IReadOnlySet<long> Participants { get; }
+    public IReadOnlySet<Prize> Prizes { get; }
+    public IReadOnlySet<Winner> Winners { get; private set; }
 
     public static Raffle Create(
         string postId,
         Criteria criteria,
         Guid organizerId,
-        IEnumerable<Participant> participants,
+        IEnumerable<long> participants,
         IEnumerable<Prize> prizes,
         string? secondGroupSlug = null)
     {
         var id = Guid.NewGuid();
         var dateTime = DateTime.UtcNow;
 
-        return new Raffle(id, postId, criteria, dateTime, organizerId, participants, prizes, secondGroupSlug);
+        return new Raffle(
+            id,
+            postId,
+            criteria,
+            dateTime,
+            organizerId,
+            participants.ToHashSet(),
+            prizes.ToHashSet(),
+            secondGroupSlug
+        );
     }
 
     public void ChooseTheWinners()
     {
+        if (Winners.Any())
+        {
+            throw new Exception("Победители уже определены.");
+        }
+
         var prizeIds = new Stack<Guid>(Prizes.SelectMany(prize => Enumerable.Repeat(prize.Id, prize.Count)));
-        var random = new Random();
-        var winners = Participants.OrderBy(_ => random.Next())
-            .Take(prizeIds.Count)
-            .ToArray();
+        var winners = Participants.OrderBy(_ => Guid.NewGuid()).Take(prizeIds.Count);
 
         foreach (var winner in winners)
         {
-            _winners.Add(new Winner(winner.Id, prizeIds.Pop()));
-        }
-    }
-
-    private static void ValidateCriteria(Criteria criteria)
-    {
-        if ((criteria & Criteria.Subscription) == 0 && (criteria & Criteria.SecondGroupSubscription) != 0)
-        {
-            throw new ArgumentException("Второе сообщество не может быть выбрано без основного.", nameof(criteria));
-        }
-    }
-
-    private static void ValidatePrizesCountWithParticipantsCount(IEnumerable<Participant> participants,
-        IEnumerable<Prize> prizes)
-    {
-        var prizesCount = prizes.Sum(p => p.Count);
-
-        if (prizesCount > participants.Count())
-        {
-            throw new AggregateException("Количество призов не может быть больше количества участников.");
+            Winners = new HashSet<Winner>(Winners) { new(winner, prizeIds.Pop()) };
         }
     }
 }
