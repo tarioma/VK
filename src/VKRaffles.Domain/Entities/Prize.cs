@@ -3,9 +3,10 @@ using GuardClauses;
 
 namespace VKRaffles.Domain.Entities;
 
-public record Prize
+public class Prize
 {
     internal const int MaxNameLength = 100;
+    internal const int MinCount = 1;
     internal const int MaxCount = 100;
 
     public Prize(Guid id, string name, int count, Guid raffleId)
@@ -13,7 +14,7 @@ public record Prize
         Guard.Against.Default(id);
         Guard.Against.NullOrWhiteSpace(name);
         Guard.Against.StringTooLong(name, MaxNameLength);
-        Guard.Against.OutOfRange(count, nameof(count), 1, MaxCount);
+        Guard.Against.OutOfRange(count, nameof(count), MinCount, MaxCount);
         Guard.Against.Default(raffleId);
 
         Id = id;
@@ -26,4 +27,11 @@ public record Prize
     public string Name { get; }
     public int Count { get; }
     public Guid RaffleId { get; }
+
+    public static Prize Create(string name, int count, Guid raffleId)
+    {
+        var id = Guid.NewGuid();
+
+        return new Prize(id, name, count, raffleId);
+    }
 }

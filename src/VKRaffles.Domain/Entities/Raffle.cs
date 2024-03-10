@@ -3,7 +3,7 @@ using GuardClauses;
 
 namespace VKRaffles.Domain.Entities;
 
-public record Raffle
+public class Raffle
 {
     internal const int MaxPrizesCount = 10;
     internal const int MaxParticipantsCount = 1_000_000;
@@ -27,11 +27,11 @@ public record Raffle
         Guard.Against.Default(dateTime);
         Guard.Against.Default(organizerId);
         Guard.Against.NullOrEmpty(participants);
-        Guard.Against.OutOfRange(prizes.Count, nameof(prizes), 1, MaxParticipantsCount);
+        Guard.Against.OutOfRange(participants.Count, nameof(participants), 1, MaxParticipantsCount);
         Guard.Against.NullOrEmpty(prizes);
         Guard.Against.OutOfRange(prizes.Count, nameof(prizes), 1, MaxPrizesCount);
 
-        if (secondGroupSlug is null && (criteria & Criteria.SecondGroupSubscription) == 0)
+        if (secondGroupSlug is null && (criteria & Criteria.SecondGroupSubscription) != 0)
         {
             throw new ArgumentException("Короткое имя второго сообщества передано, но критерий не выбран.");
         }
@@ -45,6 +45,11 @@ public record Raffle
         if ((criteria & Criteria.Subscription) == 0 && (criteria & Criteria.SecondGroupSubscription) != 0)
         {
             throw new ArgumentException("Второе сообщество не может быть выбрано без основного.", nameof(criteria));
+        }
+
+        if (participants.Any(p => p <= 0))
+        {
+            throw new ArgumentException("У участников может быть только положительные id.", nameof(participants));
         }
 
         if (prizes.Sum(p => p.Count) > participants.Count)
@@ -100,7 +105,7 @@ public record Raffle
     {
         if (Winners.Any())
         {
-            throw new Exception("Победители уже определены.");
+            throw new AggregateException("Победители уже определены.");
         }
 
         var prizeIds = new Stack<Guid>(Prizes.SelectMany(prize => Enumerable.Repeat(prize.Id, prize.Count)));

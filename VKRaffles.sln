@@ -4,6 +4,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8361A58C-78E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VKRaffles.Domain", "src\VKRaffles.Domain\VKRaffles.Domain.csproj", "{3101FBC0-2C59-4CAD-A855-400A7A3BC7EC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{089741E1-1864-4576-A192-B01CFB3E9553}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VKRaffles.Domain.Tests", "tests\VKRaffles.Domain.Tests\VKRaffles.Domain.Tests.csproj", "{267CE9BF-E775-46CE-B655-B27AC777FCE2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -11,11 +15,16 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{3101FBC0-2C59-4CAD-A855-400A7A3BC7EC} = {8361A58C-78EA-45C4-99D8-1376CB13B1D8}
+		{267CE9BF-E775-46CE-B655-B27AC777FCE2} = {089741E1-1864-4576-A192-B01CFB3E9553}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3101FBC0-2C59-4CAD-A855-400A7A3BC7EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3101FBC0-2C59-4CAD-A855-400A7A3BC7EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3101FBC0-2C59-4CAD-A855-400A7A3BC7EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3101FBC0-2C59-4CAD-A855-400A7A3BC7EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{267CE9BF-E775-46CE-B655-B27AC777FCE2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{267CE9BF-E775-46CE-B655-B27AC777FCE2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{267CE9BF-E775-46CE-B655-B27AC777FCE2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{267CE9BF-E775-46CE-B655-B27AC777FCE2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -2,11 +2,11 @@
 
 namespace VKRaffles.Domain.Entities;
 
-public record Winner
+public class Winner
 {
     public Winner(long participantVkId, Guid prizeId)
     {
-        Guard.Against.Default(participantVkId);
+        Guard.Against.NegativeOrZero(participantVkId);
         Guard.Against.Default(prizeId);
 
         ParticipantVkId = participantVkId;

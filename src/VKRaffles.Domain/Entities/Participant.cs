@@ -2,7 +2,7 @@
 
 namespace VKRaffles.Domain.Entities;
 
-public record Participant
+public class Participant
 {
     public Participant(Guid id, long vkId, Guid raffleId)
     {
