@@ -1,7 +1,6 @@
 ﻿using AutoFixture;
 using FluentAssertions;
 using VKRaffles.Domain.Entities;
-using VKRaffles.Domain.Tests.Tools;
 
 namespace VKRaffles.Domain.Tests.Entities;
 

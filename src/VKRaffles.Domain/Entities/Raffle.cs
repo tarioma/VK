@@ -38,7 +38,7 @@ public class Raffle
 
         if (secondGroupSlug is not null)
         {
-            secondGroupSlug = secondGroupSlug.Trim();
+            Guard.Against.NullOrWhiteSpace(secondGroupSlug);
             Guard.Against.StringTooLong(secondGroupSlug, MaxSecondGroupSlugLength);
         }
 
